@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Stash Tracker</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      #media_urls { display: none; } 
+    </style>
+    <link rel="stylesheet" href="/static/photobox/photobox.css">
+  </head>
+  <body>
+    <h1 id="count">Loading...</h1>
+    <div id='media_urls'>
+    </div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src='/static/photobox/jquery.photobox.js'></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var count = 0;
+      var errors = 0;
+      var socket = io();
+
+      socket.on('media_url', function(url){
+          var markup = '<a href="' + url + '"><img src="' + url + '" /></a>';
+          $('#media_urls').prepend(markup);
+          count++;
+          $('#count').html('Images: ' + count);
+      });
+
+      socket.on('error', function(error){
+          errors++;
+          $('#errors').html('Errors: ' + errors);
+      });
+
+      function startGallery() {
+        console.log('Launching gallery...');
+        $('a:first').click();
+      }
+
+
+      $(document).ready(function() {
+        console.log('Loading...');
+        $.getJSON("/media_urls");
+        $('#media_urls').photobox('a', {autoplay: true, loop: true});
+        $('#media_urls').html('Errors: ' + errors);
+        setTimeout(startGallery, 5000);
+      });
+    </script>
+  </body>
+</html>

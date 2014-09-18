@@ -1,0 +1,11 @@
+{
+  "name": "stash-tracker",
+  "version": "0.0.1",
+  "description": "A quick real-time photo gallery of the Mustached Message Service.",
+  "dependencies": {
+    "body-parser": "^1.8.2",
+    "express": "^4.9.2",
+    "socket.io": "^1.1.0",
+    "twilio": "^1.7.0"
+  }
+}
