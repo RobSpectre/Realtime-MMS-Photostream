@@ -64,6 +64,7 @@ app.post('/log', function(req, res) {
 });
 
 io.on('connection', function(socket){
+  io.emit('connected', 'Connected!');
   socket.on('stash', function(url){
     io.emit('stash', url);
   });
