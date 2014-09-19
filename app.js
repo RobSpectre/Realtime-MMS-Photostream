@@ -41,8 +41,9 @@ app.get('/media_urls', function(req, res) {
 });
 
 app.post('/log', function(req, res) {
+    console.log("Received status callback...");
     var client = new twilio.RestClient(process.env.TWILIO_ACCOUNT_SID,
-                                               process.env.TWILIO_AUTH_TOKEN);
+                                       process.env.TWILIO_AUTH_TOKEN);
     var status = req.body.MessageStatus;
     var sid = req.body.MessageSid;
 
