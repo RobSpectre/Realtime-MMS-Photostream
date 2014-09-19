@@ -18,20 +18,26 @@ app.get('/media_urls', function(req, res) {
                         status: 'delivered',
                         num_media: 1,
                         PageSize: 1000}, function(err, response) {
-        response.messages.forEach(function(message) {
-            if (message.num_media != '0') {
-                client.messages(message.sid).media.list(function(err, response) {
-                    if (err) {
-                    } else {
-                        response.mediaList.forEach(function(media) {
-                            url = "https://api.twilio.com/" + media.uri.replace('.json', '');
-                            io.emit('media_url', "https://api.twilio.com/" + media.uri.replace('.json', ''));
-                        });
-                    }
-                });
-            }
-        });
+        if (err) {
+            res.status(500);
+            res.json(err);
+        } else {
+            response.messages.forEach(function(message) {
+                if (message.num_media != '0') {
+                    client.messages(message.sid).media.list(function(err, response) {
+                        if (err) {
+                        } else {
+                            response.mediaList.forEach(function(media) {
+                                url = "https://api.twilio.com/" + media.uri.replace('.json', '');
+                                io.emit('media_url', "https://api.twilio.com/" + media.uri.replace('.json', ''));
+                            });
+                        }
+                    });
+                }
+            });
+        }
     });
+    res.json("{'Status': 'OK'}");
 });
 
 app.post('/log', function(req, res) {

@@ -32,6 +32,10 @@
       var errors = 0;
       var socket = io();
 
+      socket.on('connection', function(socket) {
+        console.log("Connected!");
+      });
+
       socket.on('media_url', function(url){
           var markup = '<a href="' + url + '"><img src="' + url + '" /></a>';
           $('#media_urls').prepend(markup);
