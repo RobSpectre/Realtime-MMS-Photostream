@@ -65,7 +65,7 @@ function streamImagesToNewUser(id) {
 io.on('connection', function(socket){
   io.to(socket.id).emit('connected', 'Connected!');
 
-  streamImagesToNewuser(socket.id);
+  streamImagesToNewUser(socket.id);
 
   socket.on('new_media', function(url){
     io.emit('stash', url);
