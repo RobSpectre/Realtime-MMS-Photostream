@@ -43,6 +43,7 @@
       }       
 
       socket.on('new_media', function(url){
+          console.log("Adding new media...");
           addImage(url);
           $('#media_urls a:first').click();
       });

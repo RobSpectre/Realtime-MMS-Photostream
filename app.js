@@ -17,7 +17,7 @@ app.get('/media_urls', function(req, res) {
     client.messages.get({from: process.env.TWILIO_CALLER_ID,
                         status: 'delivered',
                         num_media: 1,
-                        PageSize: 1000}, function(err, response) {
+                        PageSize: 300}, function(err, response) {
         if (err) {
             res.status(500);
             res.json(err);
