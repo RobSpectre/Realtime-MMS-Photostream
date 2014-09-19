@@ -10,36 +10,6 @@ app.get('/', function(req, res){
   res.sendfile('static/index.html');
 });
 
-
-app.get('/media_urls', function(req, res) {
-    var client = new twilio.RestClient(process.env.TWILIO_ACCOUNT_SID,
-                                       process.env.TWILIO_AUTH_TOKEN);
-    client.messages.get({from: process.env.TWILIO_CALLER_ID,
-                        status: 'delivered',
-                        num_media: 1,
-                        PageSize: 300}, function(err, response) {
-        if (err) {
-            res.status(500);
-            res.json(err);
-        } else {
-            response.messages.forEach(function(message) {
-                if (message.num_media != '0') {
-                    client.messages(message.sid).media.list(function(err, response) {
-                        if (err) {
-                        } else {
-                            response.mediaList.forEach(function(media) {
-                                url = "https://api.twilio.com/" + media.uri.replace('.json', '');
-                                io.emit('loading_media', "https://api.twilio.com/" + media.uri.replace('.json', ''));
-                            });
-                        }
-                    });
-                }
-            });
-        }
-    });
-    res.json("{'Status': 'OK'}");
-});
-
 app.post('/log', function(req, res) {
     console.log("Received status callback...");
     var client = new twilio.RestClient(process.env.TWILIO_ACCOUNT_SID,
@@ -64,11 +34,43 @@ app.post('/log', function(req, res) {
     res.json("{'status': 'OK'}");
 });
 
+function streamImagesToNewUser(id) {
+    var client = new twilio.RestClient(process.env.TWILIO_ACCOUNT_SID,
+                                       process.env.TWILIO_AUTH_TOKEN);
+    client.messages.get({from: process.env.TWILIO_CALLER_ID,
+                        status: 'delivered',
+                        num_media: 1,
+                        PageSize: 300}, function(err, response) {
+        if (err) {
+            res.status(500);
+            res.json(err);
+        } else {
+            response.messages.forEach(function(message) {
+                if (message.num_media != '0') {
+                    client.messages(message.sid).media.list(function(err, response) {
+                        if (err) {
+                        } else {
+                            response.mediaList.forEach(function(media) {
+                                url = "https://api.twilio.com/" + media.uri.replace('.json', '');
+                                io.to(id).emit('loading_media', "https://api.twilio.com/" + media.uri.replace('.json', ''));
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
 io.on('connection', function(socket){
-  io.emit('connected', 'Connected!');
-  socket.on('stash', function(url){
+  io.to(socket.id).emit('connected', 'Connected!');
+
+  streamImagesToNewuser(socket.id);
+
+  socket.on('new_media', function(url){
     io.emit('stash', url);
   });
+
   socket.on('error', function(err){
     io.emit('error', err);
   });
