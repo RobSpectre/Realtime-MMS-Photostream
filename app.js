@@ -29,7 +29,7 @@ app.get('/media_urls', function(req, res) {
                         } else {
                             response.mediaList.forEach(function(media) {
                                 url = "https://api.twilio.com/" + media.uri.replace('.json', '');
-                                io.emit('media_url', "https://api.twilio.com/" + media.uri.replace('.json', ''));
+                                io.emit('loading_media', "https://api.twilio.com/" + media.uri.replace('.json', ''));
                             });
                         }
                     });
@@ -53,7 +53,7 @@ app.post('/log', function(req, res) {
                 res.json("{'status': 'Error'}");
             }
             response.mediaList.forEach(function(media) {
-                io.emit('stash', "https://api.twilio.com/" + media.uri.replace('.json', ''));
+                io.emit('new_media', "https://api.twilio.com/" + media.uri.replace('.json', ''));
             });
         });
     }

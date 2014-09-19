@@ -36,10 +36,19 @@
         console.log("Connected!");
       });
 
-      socket.on('media_url', function(url){
+      function addImage(url) {
           var markup = '<a href="' + url + '"><img src="' + url + '" /></a>';
           $('#media_urls').prepend(markup);
           count++;
+      }       
+
+      socket.on('new_media', function(url){
+          addImage(url);
+          $('#media_urls a:first').click();
+      });
+
+      socket.on('loading_media', function(url) {
+          addImage(url);
           $('#image_count').text('Images: ' + count);
           if (count > 20) {
             $('#loading').html('<a onclick="startGallery()" href="#">Start slideshow</a>');
