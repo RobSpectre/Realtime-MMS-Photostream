@@ -1,17 +1,29 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html class='no-js' lang='en'>
   <head>
-    <title>Stash Tracker</title>
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      #media_urls { display: none; } 
-    </style>
+    <meta charset='utf-8'>
+    <title>Real Time Twilio MMS Stream</title>
+    <meta content='width=device-width, initial-scale=1' name='viewport'>
+    <link href='/static/styles/bootstrap.css' rel='stylesheet'>
     <link rel="stylesheet" href="/static/photobox/photobox.css">
+    <style>
+        #media_urls { display: none; }
+    </style>
   </head>
   <body>
-    <h1 id="count">Loading...</h1>
-    <div id='media_urls'>
-    </div>
+    <div class='banner'></div>
+    <div class='container-fluid' id='main-content'>
+        <div class='hero'>
+            <p class='hr'>Please wait while we fetch</p>
+            <p id="loading" class='h2'>Loading...</p>
+            <p id="image_count">Images: 0</p>
+            <p class='hr'>some most epic shizzle</p>
+        <p class='h1'>
+          powered by
+          <img src='/static/images/twilio-logo.png'>
+        </p>
+        </div>
+    <div id='media_urls'></div>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src='/static/photobox/jquery.photobox.js'></script>
     <script src="/socket.io/socket.io.js"></script>
@@ -24,17 +36,20 @@
           var markup = '<a href="' + url + '"><img src="' + url + '" /></a>';
           $('#media_urls').prepend(markup);
           count++;
-          $('#count').html('Images: ' + count);
+          $('#image_count').text('Images: ' + count);
+          if (count > 20) {
+            $('#loading').html('<a onclick="startGallery()" href="#">Start slideshow</a>');
+          }
       });
 
       socket.on('error', function(error){
           errors++;
-          $('#errors').html('Errors: ' + errors);
+          console.log('Error: ' + errors);
       });
 
       function startGallery() {
         console.log('Launching gallery...');
-        $('a:first').click();
+        $('#media_urls a:first').click();
       }
 
 
@@ -42,8 +57,6 @@
         console.log('Loading...');
         $.getJSON("/media_urls");
         $('#media_urls').photobox('a', {autoplay: true, loop: true});
-        $('#media_urls').html('Errors: ' + errors);
-        setTimeout(startGallery, 5000);
       });
     </script>
   </body>
