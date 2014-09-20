@@ -40,7 +40,7 @@ function streamImagesToNewUser(id) {
     client.messages.get({from: process.env.TWILIO_CALLER_ID,
                         status: 'delivered',
                         num_media: 1,
-                        PageSize: 300}, function(err, response) {
+                        PageSize: 100}, function(err, response) {
         if (err) {
             res.status(500);
             res.json(err);
