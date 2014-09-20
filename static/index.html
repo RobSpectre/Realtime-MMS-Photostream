@@ -36,20 +36,22 @@
         console.log("Connected!");
       });
 
-      function addImage(url) {
+      function createImage(url) {
           var markup = '<a href="' + url + '"><img src="' + url + '" /></a>';
-          $('#media_urls').prepend(markup);
           count++;
+          return markup;
       }       
 
       socket.on('new_media', function(url){
           console.log("Adding new media...");
-          addImage(url);
+          var markup = createImage(url);
+          $('#media_urls').prepend(markup);
           $('#media_urls a:first').click();
       });
 
       socket.on('loading_media', function(url) {
-          addImage(url);
+          var markup = createImage(url);
+          $('#media_urls').append(markup);
           $('#image_count').text('Images: ' + count);
           if (count > 20) {
             $('#loading').html('<a onclick="startGallery()" href="#">Start slideshow</a>');
