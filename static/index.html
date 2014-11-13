@@ -1,77 +1,45 @@
 <!DOCTYPE html>
-<html class='no-js' lang='en'>
+<html lang='en'>
   <head>
-    <meta charset='utf-8'>
     <title>Real Time Twilio MMS Stream</title>
     <meta content='width=device-width, initial-scale=1' name='viewport'>
-    <link href='/static/styles/bootstrap.css' rel='stylesheet'>
-    <link rel="stylesheet" href="/static/photobox/photobox.css">
+    <link rel="stylesheet" href="/photobox/photobox.css">
     <style>
-        #media_urls { display: none; }
+        #media_urls a { display: none; }
     </style>
   </head>
   <body>
-    <div class='banner'></div>
-    <div class='container-fluid' id='main-content'>
-        <div class='hero'>
-            <p class='hr'>Please wait while we fetch</p>
-            <p id="loading" class='h2'>Loading...</p>
-            <p id="image_count">Images: 0</p>
-            <p class='hr'>some most epic shizzle</p>
-        <p class='h1'>
-          powered by
-          <img src='/static/images/twilio-logo.png'>
-        </p>
-        </div>
-    <div id='media_urls'></div>
+    <div id='media_urls'>
+        <h1>Send a MMS to start the photostream.</h1>
+    </div>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src='/static/photobox/jquery.photobox.js'></script>
+    <script src='/photobox/jquery.photobox.js'></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      var count = 0;
-      var errors = 0;
+      function createImage(url) {
+          var markup = '<a href="' + url + '"><img src="' + url + '" /></a>';
+          return markup;
+      }       
+
+      function startGallery() {
+         $('#media_urls h1').hide();
+         $('#media_urls a:first').click(); 
+      }
+
       var socket = io();
 
       socket.on('connected', function(socket) {
         console.log("Connected!");
       });
 
-      function createImage(url) {
-          var markup = '<a href="' + url + '"><img src="' + url + '" /></a>';
-          count++;
-          return markup;
-      }       
-
-      socket.on('new_media', function(url){
+      socket.on('newMedia', function(url){
           console.log("Adding new media...");
           var markup = createImage(url);
           $('#media_urls').prepend(markup);
-          $('#media_urls a:first').click();
+          window.setTimeout(startGallery, 500);
       });
-
-      socket.on('loading_media', function(url) {
-          var markup = createImage(url);
-          $('#media_urls').append(markup);
-          $('#image_count').text('Images: ' + count);
-          if (count > 20) {
-            $('#loading').html('<a onclick="startGallery()" href="#">Start slideshow</a>');
-          }
-      });
-
-      socket.on('error', function(error){
-          errors++;
-          console.log('Error: ' + errors);
-      });
-
-      function startGallery() {
-        console.log('Launching gallery...');
-        $('#media_urls a:first').click();
-      }
-
 
       $(document).ready(function() {
-        console.log('Loading...');
-        $.getJSON("/media_urls");
         $('#media_urls').photobox('a', {autoplay: true, loop: true});
       });
     </script>

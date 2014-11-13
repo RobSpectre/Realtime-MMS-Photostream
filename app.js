@@ -1,81 +1,51 @@
-var app = require('express')();
-var twilio = require('twilio');    
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+// Require dependencies
+var http = require('http');
+var path = require('path');
+var express = require('express');
+var twilio = require('twilio');
 var bodyParser = require('body-parser');
-
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.get('/', function(req, res){
-  res.sendfile('static/index.html');
-});
-
-app.post('/log', function(req, res) {
-    console.log("Received status callback...");
-    var client = new twilio.RestClient(process.env.TWILIO_ACCOUNT_SID,
-                                       process.env.TWILIO_AUTH_TOKEN);
-    var status = req.body.MessageStatus;
-    var sid = req.body.MessageSid;
-
-    if (status == 'delivered') {
-        client.messages(sid).media.list(function(err, response) {
-            if (err) {
-                res.json("{'status': 'Error'}");
-            }
-            response.mediaList.forEach(function(media) {
-                io.emit('new_media', "https://api.twilio.com/" + media.uri.replace('.json', ''));
-            });
-        });
+ 
+// Create Express app and HTTP server, and configure socket.io
+var app = express();
+var server = http.createServer(app);
+var io = require('socket.io')(server);
+ 
+// Middleware to parse incoming HTTP POST bodies
+app.use(bodyParser.urlencoded({ 
+    extended: true 
+}));
+ 
+// Serve static content from the "static" directory
+app.use(express.static(path.join(__dirname, 'static')));
+ 
+// Configure port for HTTP server
+app.set('port', process.env.PORT || 3000);
+ 
+// Handle incoming MMS messages from Twilio
+app.post('/message', function(request, response) {
+    console.log('Received message.');
+    var twiml = twilio.TwimlResponse();
+    var numMedia = parseInt(request.body.NumMedia);
+ 
+    if (numMedia > 0) {
+        for (i = 0; i < numMedia; i++) {
+            var mediaUrl = request.body['MediaUrl' + i];
+            console.log('Displaying MediaUrl: ' + mediaUrl);
+            io.emit('newMedia', mediaUrl);
+        }
+        twiml.message('Photo received - check the screen to see it pop up!');
+    } else {
+        twiml.message(':( Doesn\'t look like there was a photo in that message.');
     }
     
-    if (status == 'failed') {
-        io.emit('error', "An error occured.");
-    }
-    res.json("{'status': 'OK'}");
+    response.type('text/xml');
+    response.send(twiml.toString());
 });
-
-function streamImagesToNewUser(id) {
-    var client = new twilio.RestClient(process.env.TWILIO_ACCOUNT_SID,
-                                       process.env.TWILIO_AUTH_TOKEN);
-    client.messages.get({from: process.env.TWILIO_CALLER_ID,
-                        status: 'delivered',
-                        num_media: 1,
-                        PageSize: 100}, function(err, response) {
-        if (err) {
-            res.status(500);
-            res.json(err);
-        } else {
-            response.messages.forEach(function(message) {
-                if (message.num_media != '0') {
-                    client.messages(message.sid).media.list(function(err, response) {
-                        if (err) {
-                        } else {
-                            response.mediaList.forEach(function(media) {
-                                url = "https://api.twilio.com/" + media.uri.replace('.json', '');
-                                io.to(id).emit('loading_media', "https://api.twilio.com/" + media.uri.replace('.json', ''));
-                            });
-                        }
-                    });
-                }
-            });
-        }
-    });
-}
-
-io.on('connection', function(socket){
-  io.to(socket.id).emit('connected', 'Connected!');
-
-  streamImagesToNewUser(socket.id);
-
-  socket.on('new_media', function(url){
-    io.emit('stash', url);
-  });
-
-  socket.on('error', function(err){
-    io.emit('error', err);
-  });
+ 
+io.on('connection', function(socket){                                            
+    socket.emit('connected', 'Connected!');                              
 });
-
-http.listen(3000, function(){
-  console.log('listening on *:3000');
+ 
+server.listen(app.get('port'), function() {
+    console.log('Express server listening on *:' + app.get('port'));
 });
