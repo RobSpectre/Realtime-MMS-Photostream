@@ -1,6 +1,6 @@
 
 {
-    "name": "Twilio MMS Real Time Photostream",
+    "name": "Twilio MMS Photostream",
     "description": "A Node.js app that receives Twilio MMS and displays photos in realtime.",
     "keywords": [
         "twilio",
