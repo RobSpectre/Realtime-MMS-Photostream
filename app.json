@@ -12,6 +12,5 @@
     ],
     "website": "http://www.twilio.com",
     "repository": "https://github.com/RobSpectre/Realtime-MMS-Photostream",
-    "logo": "https://www.twilio.com/packages/company/img/logos_downloadable_round.png",
     "success_url": "/"
 }
